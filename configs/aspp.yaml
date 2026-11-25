@@ -1,0 +1,43 @@
+# Модификация 3 (архитектурный блок): ASPP в bottleneck вместо пустого центрального блока.
+experiment:
+  name: aspp
+  description: >-
+    Модификация 3: U-Net + ASPP (DeepLabv3) в bottleneck декодера, dilation
+    1/2/4/6 + глобальный pooling. Цель: добавить многомасштабный контекст -
+    размер полипа меняется от 0.5% до 80% кадра. Функция потерь BCE.
+  tags: [aspp, unet, resnet34, bce]
+
+data:
+  root: data/raw/Kvasir-SEG
+  splits_dir: data/splits
+  image_size: 352
+  num_workers: 4
+
+model:
+  encoder_name: resnet34
+  encoder_weights: imagenet
+  decoder_channels: [256, 128, 64, 32, 16]
+  attention_gates: false
+  aspp: true
+  aspp_rates: [1, 2, 4, 6]
+  aspp_branch_channels: 128
+  aspp_dropout: 0.1
+
+loss:
+  name: bce
+
+train:
+  seed: 42
+  epochs: 50
+  batch_size: 8
+  lr: 0.0001
+  weight_decay: 0.0001
+  min_lr_ratio: 0.01
+  amp: true
+  threshold: 0.5
+
+tracker:
+  project: Kvasir-SEG polyp segmentation
+
+output:
+  dir: artifacts/experiments

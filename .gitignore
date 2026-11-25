@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Секреты
+.env
+
+# Локальные данные: в git хранится только состав выборок (data/splits)
+data/raw/*
+!data/raw/.gitkeep
+
+# Веса, результаты обучения и оценки
+artifacts/*
+!artifacts/.gitkeep
+*.pt
+*.pth
+
+# Примеры для демонстрации сервиса генерируются локально
+examples/*
+!examples/.gitkeep
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store

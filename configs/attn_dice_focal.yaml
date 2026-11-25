@@ -1,0 +1,42 @@
+# Комбинация модификаций 1 и 2. Запускать, если обе по отдельности улучшили val Dice.
+experiment:
+  name: attn_dice_focal
+  description: >-
+    Комбинация: U-Net + Attention Gates + функция потерь Dice + Focal.
+    Проверка, складываются ли эффекты модификаций 1 и 2.
+  tags: [attention_gates, dice_focal, combined, unet, resnet34]
+
+data:
+  root: data/raw/Kvasir-SEG
+  splits_dir: data/splits
+  image_size: 352
+  num_workers: 4
+
+model:
+  encoder_name: resnet34
+  encoder_weights: imagenet
+  decoder_channels: [256, 128, 64, 32, 16]
+  attention_gates: true
+  aspp: false
+
+loss:
+  name: dice_focal
+  dice_weight: 1.0
+  focal_weight: 1.0
+  focal_gamma: 2.0
+
+train:
+  seed: 42
+  epochs: 50
+  batch_size: 8
+  lr: 0.0001
+  weight_decay: 0.0001
+  min_lr_ratio: 0.01
+  amp: true
+  threshold: 0.5
+
+tracker:
+  project: Kvasir-SEG polyp segmentation
+
+output:
+  dir: artifacts/experiments

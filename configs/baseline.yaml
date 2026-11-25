@@ -1,0 +1,41 @@
+# Исходная модель: готовый U-Net из segmentation_models_pytorch без изменений.
+# Все остальные конфиги отличаются от этого ТОЛЬКО секциями model/loss и описанием
+# (проверка: diff configs/baseline.yaml configs/<вариант>.yaml).
+experiment:
+  name: baseline
+  description: >-
+    Исходная модель: U-Net (smp 0.5.0), энкодер ResNet-34 с весами ImageNet,
+    функция потерь BCE.
+  tags: [baseline, unet, resnet34, bce]
+
+data:
+  root: data/raw/Kvasir-SEG
+  splits_dir: data/splits
+  image_size: 352
+  num_workers: 4
+
+model:
+  encoder_name: resnet34
+  encoder_weights: imagenet
+  decoder_channels: [256, 128, 64, 32, 16]
+  attention_gates: false
+  aspp: false
+
+loss:
+  name: bce
+
+train:
+  seed: 42
+  epochs: 50
+  batch_size: 8
+  lr: 0.0001
+  weight_decay: 0.0001
+  min_lr_ratio: 0.01
+  amp: true
+  threshold: 0.5
+
+tracker:
+  project: Kvasir-SEG polyp segmentation
+
+output:
+  dir: artifacts/experiments

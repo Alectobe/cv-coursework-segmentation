@@ -1,0 +1,40 @@
+# Модификация 1 (способ объединения признаков): Attention Gates на skip-соединениях.
+experiment:
+  name: attn_gates
+  description: >-
+    Модификация 1: U-Net + Attention Gates на skip-соединениях декодера
+    (Oktay et al., 2018). Цель: подавить в skip-признаках фон, похожий на полип
+    по локальной текстуре, и уменьшить ложные срабатывания. Функция потерь BCE.
+  tags: [attention_gates, unet, resnet34, bce]
+
+data:
+  root: data/raw/Kvasir-SEG
+  splits_dir: data/splits
+  image_size: 352
+  num_workers: 4
+
+model:
+  encoder_name: resnet34
+  encoder_weights: imagenet
+  decoder_channels: [256, 128, 64, 32, 16]
+  attention_gates: true
+  aspp: false
+
+loss:
+  name: bce
+
+train:
+  seed: 42
+  epochs: 50
+  batch_size: 8
+  lr: 0.0001
+  weight_decay: 0.0001
+  min_lr_ratio: 0.01
+  amp: true
+  threshold: 0.5
+
+tracker:
+  project: Kvasir-SEG polyp segmentation
+
+output:
+  dir: artifacts/experiments
