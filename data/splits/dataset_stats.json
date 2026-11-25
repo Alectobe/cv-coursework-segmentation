@@ -1,0 +1,100 @@
+{
+  "n_images": 1000,
+  "image_width_range": [
+    332,
+    1920
+  ],
+  "image_height_range": [
+    352,
+    1072
+  ],
+  "n_unique_resolutions": 333,
+  "top_resolutions": [
+    {
+      "width": 622,
+      "height": 530,
+      "count": 78
+    },
+    {
+      "width": 626,
+      "height": 547,
+      "count": 66
+    },
+    {
+      "width": 626,
+      "height": 546,
+      "count": 61
+    },
+    {
+      "width": 622,
+      "height": 529,
+      "count": 56
+    },
+    {
+      "width": 622,
+      "height": 528,
+      "count": 53
+    }
+  ],
+  "near_duplicate_pairs": 4,
+  "polyp_area_percent": {
+    "all": {
+      "n": 1000,
+      "mean": 15.39,
+      "p5": 2.54,
+      "median": 11.4,
+      "p95": 40.78,
+      "min": 0.47,
+      "max": 81.18
+    },
+    "train": {
+      "n": 800,
+      "mean": 15.54,
+      "p5": 2.56,
+      "median": 11.81,
+      "p95": 41.14,
+      "min": 0.53,
+      "max": 81.18
+    },
+    "val": {
+      "n": 100,
+      "mean": 13.69,
+      "p5": 1.58,
+      "median": 9.94,
+      "p95": 35.37,
+      "min": 0.47,
+      "max": 49.18
+    },
+    "test": {
+      "n": 100,
+      "mean": 15.88,
+      "p5": 2.66,
+      "median": 11.58,
+      "p95": 41.66,
+      "min": 1.11,
+      "max": 74.49
+    }
+  },
+  "size_groups": {
+    "all": {
+      "small_lt_5pct": 200,
+      "medium_5_20pct": 534,
+      "large_gt_20pct": 266
+    },
+    "train": {
+      "small_lt_5pct": 160,
+      "medium_5_20pct": 428,
+      "large_gt_20pct": 212
+    },
+    "val": {
+      "small_lt_5pct": 20,
+      "medium_5_20pct": 53,
+      "large_gt_20pct": 27
+    },
+    "test": {
+      "small_lt_5pct": 20,
+      "medium_5_20pct": 53,
+      "large_gt_20pct": 27
+    }
+  }
+}

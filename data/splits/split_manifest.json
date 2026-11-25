@@ -1,0 +1,20 @@
+{
+  "source_url": "https://datasets.simula.no/downloads/kvasir-seg.zip",
+  "archive_sha256": "03b30e21d584e04facf49397a2576738fd626815771afbbf788f74a7153478f7",
+  "seed": 42,
+  "val_frac": 0.1,
+  "test_frac": 0.1,
+  "stratified_by": "доля площади полипа: <5%, 5-20%, >20%",
+  "hash": "pHash 16x16 по центральным 60% кадра",
+  "hash_threshold": 56,
+  "counts": {
+    "train": 800,
+    "val": 100,
+    "test": 100
+  },
+  "files_sha256": {
+    "train": "5d4ca7e90ebd3302e20cbfc11413f1f7b8054d5b3c8dae6f210af94bc8c4226f",
+    "val": "d7ec5826d317b90a1127e3f685d1cdf9d3db4bf626d28564b6e8ba4f5ea6b36a",
+    "test": "e290574c38a39974ed2d7337d168a555e1a9264821bb22e079a28be1265edbfb"
+  }
+}
