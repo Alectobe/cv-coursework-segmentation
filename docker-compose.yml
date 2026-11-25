@@ -1,0 +1,117 @@
+name: polypseg
+
+# Переменные берутся из файла .env (шаблон: .env.example)
+
+x-clearml-env: &clearml-env
+  CLEARML_API_HOST: ${CLEARML_API_HOST:-https://api.clear.ml}
+  CLEARML_WEB_HOST: ${CLEARML_WEB_HOST:-https://app.clear.ml}
+  CLEARML_FILES_HOST: ${CLEARML_FILES_HOST:-https://files.clear.ml}
+  CLEARML_API_ACCESS_KEY: ${CLEARML_API_ACCESS_KEY:-}
+  CLEARML_API_SECRET_KEY: ${CLEARML_API_SECRET_KEY:-}
+
+x-train-base: &train-base
+  build:
+    context: .
+    dockerfile: docker/train.Dockerfile
+    args:
+      TORCH_INDEX_URL: ${TORCH_INDEX_URL:-https://download.pytorch.org/whl/cu128}
+  image: polypseg-train:1.0
+  profiles: ["train"]
+  environment: *clearml-env
+  # Данные, веса, результаты и отчёты живут на хосте и переживают удаление контейнеров
+  volumes:
+    - ./data:/app/data
+    - ./artifacts:/app/artifacts
+    - ./configs:/app/configs:ro
+    - ./reports:/app/reports
+    - ./examples:/app/examples
+  # DataLoader с num_workers > 0 использует shared memory
+  shm_size: "8gb"
+
+x-gpu: &gpu
+  resources:
+    reservations:
+      devices:
+        - driver: nvidia
+          count: all
+          capabilities: [gpu]
+
+x-api-build: &api-build
+  context: .
+  dockerfile: docker/api.Dockerfile
+
+services:
+  # Скачивание Kvasir-SEG и проверка/создание разбиения
+  prepare:
+    <<: *train-base
+    command: ["sh", "-c", "python scripts/download_data.py && python scripts/prepare_data.py"]
+
+  # Обучение: docker compose run --rm train --config configs/<эксперимент>.yaml
+  train:
+    <<: *train-base
+    deploy: *gpu
+    entrypoint: ["python", "-m", "polypseg.train"]
+    command: ["--config", "configs/baseline.yaml"]
+
+  # Оценка: по умолчанию итоговая модель на test, результаты -> reports/test_eval
+  evaluate:
+    <<: *train-base
+    deploy: *gpu
+    entrypoint: ["python", "-m", "polypseg.evaluate"]
+    command: ["--checkpoint", "artifacts/final/model.pt", "--split", "test", "--out-dir", "reports/test_eval"]
+
+  # Сводная таблица экспериментов -> reports/experiments.md
+  compare:
+    <<: *train-base
+    entrypoint: ["python", "scripts/compare_experiments.py"]
+    command: []
+
+  # Выбор итоговой модели по val mDice -> artifacts/final/model.pt
+  select:
+    <<: *train-base
+    entrypoint: ["python", "scripts/select_final.py"]
+    command: []
+
+  # Тестовые снимки для демонстрации сервиса -> examples/
+  examples:
+    <<: *train-base
+    entrypoint: ["python", "scripts/export_examples.py"]
+    command: []
+
+  # Сервис инференса (запускается по умолчанию: docker compose up -d)
+  api:
+    build: *api-build
+    image: polypseg-api:1.0
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      MODEL_PATH: /app/artifacts/final/model.pt
+    volumes:
+      - ./artifacts:/app/artifacts:ro
+    restart: unless-stopped
+
+  # Скачивание итоговых весов в artifacts/final/model.pt (без обучения)
+  weights:
+    build: *api-build
+    image: polypseg-api:1.0
+    profiles: ["tools"]
+    entrypoint: ["python", "scripts/download_weights.py"]
+    environment:
+      <<: *clearml-env
+      WEIGHTS_URL: ${WEIGHTS_URL:-https://github.com/Alectobe/cv-coursework-segmentation/releases/download/v1.0/model.pt}
+      CLEARML_MODEL_ID: ${CLEARML_MODEL_ID:-}
+      WEIGHTS_SHA256: ${WEIGHTS_SHA256:-}
+    volumes:
+      - ./artifacts:/app/artifacts
+
+  # Тесты: docker compose run --rm tests
+  tests:
+    build: *api-build
+    image: polypseg-api:1.0
+    profiles: ["tools"]
+    working_dir: /src
+    environment:
+      PYTHONPATH: /src/src:/src
+    volumes:
+      - .:/src:ro
+    entrypoint: ["sh", "-c", "pip install -q -r requirements/dev.txt && python -m pytest -q -p no:cacheprovider tests"]
